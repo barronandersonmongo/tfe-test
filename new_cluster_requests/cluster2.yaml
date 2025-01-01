@@ -1,0 +1,3 @@
+cluster_name: "test-cluster"
+provider_instance_size_name: "M10"
+
