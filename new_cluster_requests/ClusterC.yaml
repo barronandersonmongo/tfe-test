@@ -1,0 +1,2 @@
+provider_instance_size_name: ${{ parameters.clusterSize == 'Large' ? 'M30' : parameters.clusterSize == 'Medium' ? 'M20' : 'M10' }}
+cluster_name: ClusterC 
