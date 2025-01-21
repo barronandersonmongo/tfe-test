@@ -1,0 +1,51 @@
+name: Process Merged YAML File
+
+on:
+  pull_request:
+    types:
+      - closed # Trigger when a pull request is closed
+
+jobs:
+  process-merged-file:
+    if: github.event.pull_request.merged == true # Only run if the PR was merged
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Get the list of files changed in the PR
+      - name: Get merged YAML files
+        id: get_yaml_files
+        run: |
+          # Get the list of modified files in the PR
+          FILES=$(jq -r '.pull_request.files[] | select(.filename | startswith("new_cluster_requests/") and .filename | endswith(".yaml")) | .filename' <<< "${{ toJson(github.event.pull_request) }}")
+          if [ -z "$FILES" ]; then
+            echo "No matching YAML files found in /new_cluster_requests."
+            exit 0
+          fi
+          echo "Matched files: $FILES"
+          echo "::set-output name=files::$FILES"
+
+      # Move the YAML file to the approved directory
+      - name: Move file
+        if: steps.get_yaml_files.outputs.files != ''
+        run: |
+          for file in ${{ steps.get_yaml_files.outputs.files }}; do
+            mv "$file" ./approved_cluster_requests/
+            git add ./approved_cluster_requests/
+            git rm "$file"
+          done
+
+      # Commit and push the changes
+      - name: Commit and push changes
+        if: steps.get_yaml_files.outputs.files != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Move merged YAML file(s) to approved_cluster_requests"
+          git push
+
