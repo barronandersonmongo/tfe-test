@@ -7,7 +7,7 @@ on:
 
 jobs:
   process-merged-file:
-    if: github.event.pull_request.merged == true # Only run if the PR was merged
+    if: github.event.pull_request.merged == true # Only proceed if the PR was merged
     runs-on: ubuntu-latest
 
     steps:
@@ -15,32 +15,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Get the list of files changed in the PR
-      - name: Get merged YAML files
-        id: get_yaml_files
+      # Fetch the list of modified files in the PR
+      - name: Fetch modified files
+        id: fetch_files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get the list of modified files in the PR
-          FILES=$(jq -r '.pull_request.files[] | select(.filename | startswith("new_cluster_requests/") and .filename | endswith(".yaml")) | .filename' <<< "${{ toJson(github.event.pull_request) }}")
-          if [ -z "$FILES" ]; then
+          curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+            | jq -r '.[] | select(.filename | startswith("new_cluster_requests/") and .filename | endswith(".yaml")) | .filename' > changed_files.txt
+
+          if [ ! -s changed_files.txt ]; then
             echo "No matching YAML files found in /new_cluster_requests."
             exit 0
           fi
-          echo "Matched files: $FILES"
-          echo "::set-output name=files::$FILES"
 
-      # Move the YAML file to the approved directory
-      - name: Move file
-        if: steps.get_yaml_files.outputs.files != ''
+          echo "Matched files:"
+          cat changed_files.txt
+
+      # Move the YAML files
+      - name: Move files
         run: |
-          for file in ${{ steps.get_yaml_files.outputs.files }}; do
+          while read -r file; do
             mv "$file" ./approved_cluster_requests/
             git add ./approved_cluster_requests/
             git rm "$file"
-          done
+          done < changed_files.txt
 
-      # Commit and push the changes
+      # Commit and push changes
       - name: Commit and push changes
-        if: steps.get_yaml_files.outputs.files != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
