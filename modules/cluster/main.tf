@@ -1,43 +1,15 @@
-terraform {
-  required_providers {
-    mongodbatlas = {
-      source  = "mongodb/mongodbatlas"
-      version = "~> 1.9.0"
-    }
-  }
-}
-
-variable "project_id" {
-  description = "MongoDB Atlas Project ID"
-  type        = string
-}
-
-variable "cluster_name" {
-  description = "Name of the MongoDB Atlas cluster"
-  type        = string
-}
-
-variable "provider_instance_size_name" {
-  description = "Atlas tier size"
-  type        = string
+provider "mongodbatlas" {
+  public_key  = var.public_key
+  private_key = var.private_key
 }
 
 resource "mongodbatlas_cluster" "this" {
   project_id                   = var.project_id
   name                         = var.cluster_name
-  backup_enabled               = false
+  backup_enabled               = var.backup_enabled
   cluster_type                 = "REPLICASET"
-  provider_name                = "AWS"
-  provider_region_name         = "US_WEST_2"
+  provider_name                = var.provider_name
+  provider_region_name         = var.provider_region
   provider_instance_size_name  = var.provider_instance_size_name
-
-  replication_specs {
-    num_shards = 1
-    regions_config {
-      region_name     = "US_WEST_2"
-      electable_nodes = 3
-      priority        = 7
-    }
-  }
 }
 
