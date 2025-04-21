@@ -19,12 +19,6 @@ variable "org_id" {
   type        = string
 }
 
-variable "cluster_name" {
-  description = "Name of the cluster"
-  type        = string
-  default = ""
-}
-
 variable "provider_name" {
   description = "Name of the cloud provider (e.g. AWS, Azure, GCP)"
   type        = string
@@ -33,12 +27,6 @@ variable "provider_name" {
 variable "provider_region" {
   description = "Name of the cloud provider region (e.g. AWS: US_EAST, Azure: US_SOUTH_CENTRAL, GCP: US_CENTRAL1)"
   type        = string
-}
-
-variable "provider_instance_size_name" {
-  description = "Name of the cloud provider instance size (e.g. M10, M20, M30)"
-  type        = string
-  default = ""
 }
 
 variable "backup_enabled" {
