@@ -22,6 +22,7 @@ variable "org_id" {
 variable "cluster_name" {
   description = "Name of the cluster"
   type        = string
+  default = ""
 }
 
 variable "provider_name" {
@@ -37,6 +38,7 @@ variable "provider_region" {
 variable "provider_instance_size_name" {
   description = "Name of the cloud provider instance size (e.g. M10, M20, M30)"
   type        = string
+  default = ""
 }
 
 variable "backup_enabled" {

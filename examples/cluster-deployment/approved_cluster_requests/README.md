@@ -1,1 +1,0 @@
-This document must be in this directory.  If this document is removed, the automation from Terraform for a speculative run will not work correctly as GitHub does not present empty directories.  By having a document with a .md extension, it has content, but this file extension will be invisible to Terraform as it is seeking .yaml, or .yml files only.
